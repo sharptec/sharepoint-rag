@@ -1,0 +1,13 @@
+[Unit]
+Description=SharePoint RAG API Service
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/opt/sharepoint_rag
+EnvironmentFile=/opt/sharepoint_rag/.env
+ExecStart=/opt/sharepoint_rag/venv/bin/uvicorn api:app --host 0.0.0.0 --port 8000
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

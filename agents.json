@@ -1,0 +1,14 @@
+[
+    {
+        "id": "default",
+        "name": "Default Agent",
+        "folder_id": "0132GWCTECWY345YMPLBCZOYXWOP47LCIG",
+        "folder_name": "Technical Agent"
+    },
+    {
+        "id": "technical-kb",
+        "name": "Technical KB",
+        "folder_id": "0132GWCTBCFFXPKH27ENAKU5EBER4VZSOS",
+        "folder_name": "ESSCom Implementation Agent"
+    }
+]

@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+.DS_Store
+
+# Application Specific
+app.log
+app.pid
+chroma_db/
+downloads/
+static/files/
+
+# IDE
+.vscode/
+.idea/

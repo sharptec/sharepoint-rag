@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SharePoint RAG Assistant</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar Configuration -->
+        <aside class="glass-panel sidebar">
+            <div>
+                <h1>InfoHelper</h1>
+                <p style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">SharePoint Intelligence</p>
+                <button id="openSettingsBtn"
+                    style="background: none; border: 1px solid rgba(255,255,255,0.3); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem; margin-top: 5px;">⚙️
+                    Settings</button>
+            </div>
+
+            <div class="input-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <h2>Agents</h2>
+                    <button id="addAgentBtn"
+                        style="background: none; border: 1px solid rgba(255,255,255,0.3); color: white; border-radius: 50%; width: 20px; height: 20px; line-height: 18px; cursor: pointer; font-size: 0.8rem;">+</button>
+                </div>
+                <div id="agentsList"
+                    style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 200px; overflow-y: auto;">
+                    <!-- Agents rendered here -->
+                    <div style="text-align: center; color: #888; font-size: 0.8rem;">Initializing...</div>
+                </div>
+            </div>
+
+
+            <!-- Add/Edit Agent Modal -->
+            <div id="agentModal"
+                style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+                <div class="glass-panel" style="width: 400px; padding: 2rem;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 id="agentModalTitle">Add New Agent</h3>
+                        <button id="closeAgentModalBtn"
+                            style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;">&times;</button>
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <label
+                            style="display: block; font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 0.3rem;">Agent
+                            Name</label>
+                        <input type="text" id="agentNameInput" placeholder="e.g. Technical KB"
+                            style="width: 100%; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px;">
+                    </div>
+
+
+                    <div style="margin-bottom: 1rem;">
+                        <label
+                            style="display: block; font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 0.3rem;">Source
+                            Folder</label>
+                        <div style="display: flex; gap: 0.5rem; flex-direction: column;">
+                            <!-- Primary: Folder Name (Read Only) -->
+                            <div style="display: flex; gap: 0.5rem;">
+                                <input type="text" id="agentFolderDisplayInput" placeholder="No Folder Selected"
+                                    readonly
+                                    style="flex-grow: 1; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px; cursor: default;">
+                                <button id="agentBrowseBtn" class="btn btn-primary"
+                                    style="padding: 0.3rem 0.6rem; font-size: 0.8rem; white-space: nowrap;">Browse</button>
+                            </div>
+                            <!-- Secondary: Folder ID -->
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <label
+                                    style="font-size: 0.7rem; color: rgba(255,255,255,0.4); white-space: nowrap;">Folder
+                                    ID:</label>
+                                <input type="text" id="agentFolderIdInput" placeholder="Folder ID"
+                                    style="flex-grow: 1; font-size: 0.7rem; padding: 0.2rem; background: rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); border-radius: 3px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LLM Configuration Section -->
+                    <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <h4 style="margin-bottom: 0.8rem; font-size: 0.9rem; color: rgba(255,255,255,0.9);">LLM
+                            Configuration</h4>
+                        <div style="margin-bottom: 1rem;">
+                            <label
+                                style="display: block; font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 0.3rem;">Provider</label>
+                            <select id="agentLlmProvider"
+                                style="width: 100%; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px;">
+                                <option value="gemini">Google Gemini</option>
+                                <option value="ollama">Ollama (Local)</option>
+                            </select>
+                        </div>
+
+                        <div id="agentOllamaConfig" style="display: none;">
+                            <div style="margin-bottom: 1rem;">
+                                <label
+                                    style="display: block; font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 0.3rem;">Ollama
+                                    Base URL</label>
+                                <input type="text" id="agentOllamaBaseUrl" placeholder="http://localhost:11434"
+                                    style="width: 100%; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px;">
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label
+                                    style="display: block; font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 0.3rem;">Ollama
+                                    Model</label>
+                                <input type="text" id="agentOllamaModel" placeholder="llama3"
+                                    style="width: 100%; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button id="saveAgentBtn" class="btn btn-primary" style="width: 100%;">Create Agent</button>
+                    <div id="agentMsg" style="margin-top: 1rem; font-size: 0.8rem; text-align: center; height: 1.2em;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Folder Browser Modal -->
+            <div id="browserModal"
+                style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+                <div class="glass-panel" style="width: 500px; height: 600px; padding: 0;">
+                    <div
+                        style="padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center;">
+                        <h3>Browse Folders</h3>
+                        <button id="closeBrowserBtn"
+                            style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;">&times;</button>
+                    </div>
+                    <div id="breadcrumb"
+                        style="padding: 0.5rem 1rem; font-size: 0.8rem; color: #a0aec0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        root
+                    </div>
+                    <div id="folderList" style="flex-grow: 1; overflow-y: auto; padding: 1rem;">
+                        <!-- Folders go here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Modal -->
+            <div id="settingsModal"
+                style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; justify-content: center; align-items: center; backdrop-filter: blur(5px);">
+                <div class="glass-panel" style="width: 400px; padding: 2rem;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3>LLM Settings</h3>
+                        <button id="closeSettingsBtn"
+                            style="background: none; border: none; color: white; cursor: pointer; font-size: 1.2rem;">&times;</button>
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <label
+                            style="display: block; font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 0.3rem;">Provider</label>
+                        <select id="llmProvider"
+                            style="width: 100%; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px;">
+                            <option value="gemini">Google Gemini</option>
+                            <option value="ollama">Ollama (Local)</option>
+                        </select>
+                    </div>
+
+                    <div id="ollamaConfig" style="display: none;">
+                        <div style="margin-bottom: 1rem;">
+                            <label
+                                style="display: block; font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 0.3rem;">Ollama
+                                Base URL</label>
+                            <input type="text" id="ollamaBaseUrl" value="http://localhost:11434"
+                                style="width: 100%; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px;">
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <label
+                                style="display: block; font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 0.3rem;">Ollama
+                                Model</label>
+                            <input type="text" id="ollamaModel" value="llama3"
+                                style="width: 100%; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 4px;">
+                        </div>
+                    </div>
+
+                    <button id="saveSettingsBtn" class="btn btn-primary" style="width: 100%;">Save Settings</button>
+                    <div id="settingsMsg"
+                        style="margin-top: 1rem; font-size: 0.8rem; text-align: center; height: 1.2em;"></div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <h2>Actions</h2>
+                <button id="ingestBtn" class="btn btn-primary"
+                    style="background: linear-gradient(135deg, #FF6B6B 0%, #EE5D5D 100%);">Start Ingestion</button>
+            </div>
+
+            <div style="flex-grow: 1; display: flex; flex-direction: column;">
+                <h2>System Log</h2>
+                <div id="statusLog" class="status-log">
+                    <div>> System Ready...</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Chat Interface -->
+        <main class="glass-panel chat-container">
+            <div id="chatHistory" class="chat-history">
+                <div class="message ai">
+                    Hello! I'm your SharePoint Assistant. I can help you find information in the documents within the
+                    configured folder. What would you like to know?
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="Ask a question about your documents..."
+                    autocomplete="off">
+                <button id="sendBtn" class="btn btn-primary">Send</button>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js?v=2"></script>
+</body>
+
+</html>
