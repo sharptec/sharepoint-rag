@@ -12,7 +12,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_ollama import ChatOllama
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
-from config import GOOGLE_API_KEY, PERSIST_DIRECTORY, LLM_PROVIDER, OLLAMA_BASE_URL, OLLAMA_MODEL
+from config import GOOGLE_API_KEY, PERSIST_DIRECTORY, LLM_PROVIDER, OLLAMA_BASE_URL, OLLAMA_MODEL, AGENTS_FILE, SETTINGS_FILE
 
 app = FastAPI()
 
@@ -20,7 +20,7 @@ app = FastAPI()
 # In-memory config storage (basic)
 # Deprecated in favor of agents.json, but keeping for backward compatibility if needed, 
 # or we can remove it. Let's redirect config_store usage to the "default" agent.
-AGENTS_FILE = os.path.join(os.path.dirname(__file__), "agents.json")
+# AGENTS_FILE moved to config.py
 
 def load_agents():
     if os.path.exists(AGENTS_FILE):
@@ -45,7 +45,7 @@ async def startup_event():
             "folder_name": "Not Configured"
         }])
 
-SETTINGS_FILE = os.path.join(os.path.dirname(__file__), "settings.json")
+# SETTINGS_FILE moved to config.py
 
 def load_settings():
     if os.path.exists(SETTINGS_FILE):

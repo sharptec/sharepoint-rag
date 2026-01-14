@@ -19,5 +19,15 @@ LLM_PROVIDER = os.getenv("LLM_PROVIDER", "gemini") # "gemini" or "ollama"
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "llama3")
 
-# Vector DB Configuration
-PERSIST_DIRECTORY = os.path.join(os.path.dirname(__file__), "chroma_db")
+# Persistence Configuration
+DATA_DIR = os.getenv("DATA_DIR")
+BASE_DIR = os.path.dirname(__file__)
+
+if DATA_DIR:
+    PERSIST_DIRECTORY = os.path.join(DATA_DIR, "chroma_db")
+    AGENTS_FILE = os.path.join(DATA_DIR, "agents.json")
+    SETTINGS_FILE = os.path.join(DATA_DIR, "settings.json")
+else:
+    PERSIST_DIRECTORY = os.path.join(BASE_DIR, "chroma_db")
+    AGENTS_FILE = os.path.join(BASE_DIR, "agents.json")
+    SETTINGS_FILE = os.path.join(BASE_DIR, "settings.json")
